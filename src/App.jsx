@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import './App.css'
+import './App.css';
+import FullPageLoading from './components/FullPageLoading';
 
 const API_BASE = "https://ec-course-api.hexschool.io/v2";
 const API_PATH = "202501-react-shaoyu";
@@ -10,15 +11,23 @@ function App() {
   const [page, setPage] = useState(1);  // 當前頁數
   const [totalPages, setTotalPages] = useState(1); // 總頁數
   const [searchTerm, setSearchTerm] = useState(''); // 搜尋關鍵字
+  const [loading, setLoading] = useState(false); // 加載狀態
   const searchCategoryRef = useRef(null); // 分類搜尋的參考
 
   useEffect(() => {
+    setLoading(true); // 開始加載
     axios.get(`${API_BASE}/api/${API_PATH}/products?page=${page}&category=${searchTerm}`)
       .then(response => {
         setProducts(response.data.products);
         setTotalPages(response.data.pagination.total_pages);
       })
-      .catch(error => console.error('Error fetching products:', error));
+      .catch(error => {
+        console.error('Error fetching products:', error);
+        alert('取得產品資料失敗!!');
+      })
+      .finally(() => {
+        setLoading(false); // 結束加載
+      });
   }, [page, searchTerm]);
 
   /**
@@ -43,10 +52,11 @@ function App() {
 
   return (
     <div id="app">
+      {loading && <FullPageLoading />} {/* 加載時顯示 FullPageLoading */}
       <div className="container">
         <div className="mt-4">
           {/* 產品Modal */}
-          
+
           {/* 產品Modal */}
           <div className="row g-3 align-items-center">
             <div className="col-auto">
@@ -125,7 +135,6 @@ function App() {
               </div>
             )
           }
-          
           {/* Pagination */}
           <div className="text-end">
             <button className="btn btn-outline-danger" type="button">清空購物車</button>
