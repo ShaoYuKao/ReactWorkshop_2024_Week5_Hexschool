@@ -1,12 +1,19 @@
 import { useState, useEffect, useRef } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import axios from 'axios';
 import './App.css'
 
 const API_BASE = "https://ec-course-api.hexschool.io/v2";
-const API_PATH = "";
+const API_PATH = "202501-react-shaoyu";
 
 function App() {
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    axios.get(`${API_BASE}/api/${API_PATH}/products`)
+      .then(response => setProducts(response.data.products))
+      .catch(error => console.error('Error fetching products:', error));
+  }, []);
+
   return (
     <div id="app">
       <div className="container">
@@ -24,29 +31,32 @@ function App() {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td style={{ width: '200px' }}>
-                  <div style={{ height: '100px', backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
-                </td>
-                <td></td>
-                <td>
-                  <div className="h5"></div>
-                  <del className="h6">原價</del>
-                  <div className="h5"></div>
-                </td>
-                <td>
-                  <div className="btn-group btn-group-sm">
-                    <button type="button" className="btn btn-outline-secondary">
-                      <i className="fas fa-spinner fa-pulse"></i>
-                      查看更多
-                    </button>
-                    <button type="button" className="btn btn-outline-danger">
-                      <i className="fas fa-spinner fa-pulse"></i>
-                      加到購物車
-                    </button>
-                  </div>
-                </td>
-              </tr>
+              {products.map(product => (
+                <tr key={product.id}>
+                  <td style={{ width: '200px' }}>
+                    <div style={{ height: '100px', backgroundSize: 'cover', backgroundPosition: 'center' }}>
+                      <img src={product.imageUrl} alt={product.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                  </td>
+                  <td>{product.title}</td>
+                  <td>
+                    <del className="h6">{product.origin_price}</del>
+                    <div className="h5">{product.price}</div>
+                  </td>
+                  <td>
+                    <div className="btn-group btn-group-sm">
+                      <button type="button" className="btn btn-outline-secondary">
+                        <i className="fas fa-spinner fa-pulse"></i>
+                        查看更多
+                      </button>
+                      <button type="button" className="btn btn-outline-danger">
+                        <i className="fas fa-spinner fa-pulse"></i>
+                        加到購物車
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
           <div className="text-end">
