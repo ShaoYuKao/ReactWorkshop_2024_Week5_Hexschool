@@ -6,13 +6,29 @@ const API_BASE = "https://ec-course-api.hexschool.io/v2";
 const API_PATH = "202501-react-shaoyu";
 
 function App() {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState([]); // 產品列表
+  const [page, setPage] = useState(1);  // 當前頁數
+  const [totalPages, setTotalPages] = useState(1); // 總頁數
 
   useEffect(() => {
-    axios.get(`${API_BASE}/api/${API_PATH}/products`)
-      .then(response => setProducts(response.data.products))
+    axios.get(`${API_BASE}/api/${API_PATH}/products?page=${page}`)
+      .then(response => {
+        setProducts(response.data.products);
+        setTotalPages(response.data.pagination.total_pages);
+      })
       .catch(error => console.error('Error fetching products:', error));
-  }, []);
+  }, [page]);
+
+  /**
+   * 處理頁面變更的函式。
+   * @param {number} newPage - 新的頁面號碼。
+   * @returns {void} 
+   */
+  const handlePageChange = (newPage) => {
+    if (newPage > 0 && newPage <= totalPages) {
+      setPage(newPage);
+    }
+  };
 
   return (
     <div id="app">
@@ -59,6 +75,29 @@ function App() {
               ))}
             </tbody>
           </table>
+          {/* Pagination */}
+          <div className="d-flex justify-content-end">
+            <nav aria-label="Page navigation example">
+              <ul className="pagination">
+                <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
+                  <button className="page-link" onClick={() => handlePageChange(page - 1)} aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                  </button>
+                </li>
+                {[...Array(totalPages)].map((_, index) => (
+                  <li key={index} className={`page-item ${page === index + 1 ? 'active' : ''}`}>
+                    <button className="page-link" onClick={() => handlePageChange(index + 1)}>{index + 1}</button>
+                  </li>
+                ))}
+                <li className={`page-item ${page === totalPages ? 'disabled' : ''}`}>
+                  <button className="page-link" onClick={() => handlePageChange(page + 1)} aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+          {/* Pagination */}
           <div className="text-end">
             <button className="btn btn-outline-danger" type="button">清空購物車</button>
           </div>
