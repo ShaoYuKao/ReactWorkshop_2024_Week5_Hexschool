@@ -9,15 +9,17 @@ function App() {
   const [products, setProducts] = useState([]); // 產品列表
   const [page, setPage] = useState(1);  // 當前頁數
   const [totalPages, setTotalPages] = useState(1); // 總頁數
+  const [searchTerm, setSearchTerm] = useState(''); // 搜尋關鍵字
+  const searchCategoryRef = useRef(null); // 分類搜尋的參考
 
   useEffect(() => {
-    axios.get(`${API_BASE}/api/${API_PATH}/products?page=${page}`)
+    axios.get(`${API_BASE}/api/${API_PATH}/products?page=${page}&category=${searchTerm}`)
       .then(response => {
         setProducts(response.data.products);
         setTotalPages(response.data.pagination.total_pages);
       })
       .catch(error => console.error('Error fetching products:', error));
-  }, [page]);
+  }, [page, searchTerm]);
 
   /**
    * 處理頁面變更的函式。
@@ -30,6 +32,15 @@ function App() {
     }
   };
 
+  /**
+   * 處理搜尋操作的函式。
+   * 當呼叫此函式時，會將頁面重置為第一頁，並設定搜尋關鍵字。
+   */
+  const handleSearch = () => {
+    setPage(1); // 重置頁面為第一頁
+    setSearchTerm(searchCategoryRef.current.value); // 設定搜尋關鍵字
+  };
+
   return (
     <div id="app">
       <div className="container">
@@ -37,9 +48,21 @@ function App() {
           {/* 產品Modal */}
           
           {/* 產品Modal */}
+          <div className="row g-3 align-items-center">
+            <div className="col-auto">
+              <label htmlFor="searchCategory">分類：</label>
+            </div>
+            <div className="col-auto">
+              <input id="searchCategory" ref={searchCategoryRef} className="form-control" type="search" placeholder="搜尋分類" aria-label="搜尋分類" name="searchCategory" autoComplete='off' />
+            </div>
+            <div className="col-auto">
+              <button className="btn btn-outline-primary" type="button" onClick={handleSearch}>搜尋</button>
+            </div>
+          </div>
           <table className="table align-middle">
             <thead>
               <tr>
+                <th>分類</th>
                 <th>圖片</th>
                 <th>商品名稱</th>
                 <th>價格</th>
@@ -49,6 +72,7 @@ function App() {
             <tbody>
               {products.map(product => (
                 <tr key={product.id}>
+                  <td>{product.category}</td>
                   <td style={{ width: '200px' }}>
                     <div style={{ height: '100px', backgroundSize: 'cover', backgroundPosition: 'center' }}>
                       <img src={product.imageUrl} alt={product.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -76,27 +100,32 @@ function App() {
             </tbody>
           </table>
           {/* Pagination */}
-          <div className="d-flex justify-content-end">
-            <nav aria-label="Page navigation example">
-              <ul className="pagination">
-                <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
-                  <button className="page-link" onClick={() => handlePageChange(page - 1)} aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
-                  </button>
-                </li>
-                {[...Array(totalPages)].map((_, index) => (
-                  <li key={index} className={`page-item ${page === index + 1 ? 'active' : ''}`}>
-                    <button className="page-link" onClick={() => handlePageChange(index + 1)}>{index + 1}</button>
-                  </li>
-                ))}
-                <li className={`page-item ${page === totalPages ? 'disabled' : ''}`}>
-                  <button className="page-link" onClick={() => handlePageChange(page + 1)} aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
-                  </button>
-                </li>
-              </ul>
-            </nav>
-          </div>
+          {
+            totalPages > 1 && (
+              <div className="d-flex justify-content-end">
+                <nav aria-label="Page navigation example">
+                  <ul className="pagination">
+                    <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
+                      <button className="page-link" onClick={() => handlePageChange(page - 1)} aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                      </button>
+                    </li>
+                    {[...Array(totalPages)].map((_, index) => (
+                      <li key={index} className={`page-item ${page === index + 1 ? 'active' : ''}`}>
+                        <button className="page-link" onClick={() => handlePageChange(index + 1)}>{index + 1}</button>
+                      </li>
+                    ))}
+                    <li className={`page-item ${page === totalPages ? 'disabled' : ''}`}>
+                      <button className="page-link" onClick={() => handlePageChange(page + 1)} aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                      </button>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            )
+          }
+          
           {/* Pagination */}
           <div className="text-end">
             <button className="btn btn-outline-danger" type="button">清空購物車</button>
