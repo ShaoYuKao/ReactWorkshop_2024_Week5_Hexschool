@@ -8,6 +8,7 @@ import AddToCartModal from './components/AddToCartModal';
 import Pagination from './components/Pagination';
 import RemoveCartItemModal from './components/RemoveCartItemModal';
 import ClearCartModal from './components/ClearCartModal';
+import { useForm } from 'react-hook-form';
 
 const API_BASE = "https://ec-course-api.hexschool.io/v2";
 const API_PATH = "202501-react-shaoyu";
@@ -28,6 +29,25 @@ function App() {
   const [mode, setMode] = useState('add'); // 模式
   const [editCartId, setEditCartId] = useState(null); // 編輯的購物車ID
   const [removeCartItem, setRemoveCartItem] = useState(null); // 要刪除的購物車項目
+
+  const { register, handleSubmit, formState: { errors } } = useForm();  // 表單處理
+
+  const onSubmit = (data) => {
+    alert('訂單已送出');
+  };
+
+  /**
+   * 當表單驗證錯誤時觸發的回調函數。
+   * 
+   * @param {Object} errors - 包含所有錯誤訊息的物件。
+   * @param {Object} errors.key - 錯誤訊息的鍵值對。
+   * @param {string} errors.key.message - 錯誤訊息的內容。
+   */
+  const onError = (errors) => {
+    Object.keys(errors).forEach(key => {
+      console.log(errors[key].message);
+    });
+  };
 
   useEffect(() => {
     setLoading(true); // 開始加載
@@ -250,6 +270,11 @@ function App() {
       });
   };
 
+  /**
+   * 顯示清空購物車的模態視窗。
+   * 使用 Bootstrap 的 Modal 元件，並將 backdrop 設定為 'static'，
+   * 以防止使用者點擊背景關閉模態視窗。
+   */
   const handleClearCart = () => {
     const clearCartModal = new bootstrap.Modal(document.getElementById('clearCartModal'), {
       backdrop: 'static'
@@ -257,6 +282,13 @@ function App() {
     clearCartModal.show();
   };
 
+  /**
+   * 清空購物車的處理函式。
+   * 當用戶確認清空購物車時，會發送請求至伺服器以刪除購物車中的所有項目。
+   * 在請求過程中會顯示加載狀態，並在請求完成後更新購物車資訊。
+   * 如果請求成功，會顯示成功訊息並關閉清空購物車的模態框。
+   * 如果請求失敗，會顯示錯誤訊息。
+   */
   const handleConfirmClearCart = () => {
     setLoading(true); // 開始加載
     axios.delete(`${API_BASE}/api/${API_PATH}/carts`)
@@ -405,30 +437,68 @@ function App() {
           </table>
         </div>
         <div className="my-5 row justify-content-center">
-          <form className="col-md-6">
+          <form className="col-md-6" onSubmit={handleSubmit(onSubmit, onError)}>
             <div className="mb-3">
               <label htmlFor="email" className="form-label">Email</label>
-              <input id="email" name="email" type="email" className="form-control" placeholder="請輸入 Email" />
+              <input 
+                id="email" 
+                name="email" 
+                type="email" 
+                className="form-control" 
+                placeholder="請輸入 Email" 
+                {...register('email', { required: 'Email 是必填欄位', pattern: { value: /^\S+@\S+$/i, message: 'Email 格式不正確' } })}
+              />
+              {errors.email && <span className="text-danger">{errors.email.message}</span>}
             </div>
 
             <div className="mb-3">
               <label htmlFor="name" className="form-label">收件人姓名</label>
-              <input id="name" name="姓名" type="text" className="form-control" placeholder="請輸入姓名" />
+              <input 
+                id="name" 
+                name="name" 
+                type="text" 
+                className="form-control" 
+                placeholder="請輸入姓名" 
+                {...register('name', { required: '姓名是必填欄位' })}
+              />
+              {errors.name && <span className="text-danger">{errors.name.message}</span>}
             </div>
 
             <div className="mb-3">
               <label htmlFor="tel" className="form-label">收件人電話</label>
-              <input id="tel" name="電話" type="text" className="form-control" placeholder="請輸入電話" />
+              <input 
+                id="tel" 
+                name="tel" 
+                type="tel" 
+                className="form-control" 
+                placeholder="請輸入電話" 
+                {...register('tel', { required: '電話是必填欄位', minLength: { value: 8, message: '電話號碼需超過 8 碼' } })}
+              />
+              {errors.tel && <span className="text-danger">{errors.tel.message}</span>}
             </div>
 
             <div className="mb-3">
               <label htmlFor="address" className="form-label">收件人地址</label>
-              <input id="address" name="地址" type="text" className="form-control" placeholder="請輸入地址" />
+              <input 
+                id="address" 
+                name="address" 
+                type="text" 
+                className="form-control" 
+                placeholder="請輸入地址" 
+                {...register('address', { required: '地址是必填欄位' })}
+              />
+              {errors.address && <span className="text-danger">{errors.address.message}</span>}
             </div>
 
             <div className="mb-3">
               <label htmlFor="message" className="form-label">留言</label>
-              <textarea id="message" className="form-control" cols="30" rows="10"></textarea>
+              <textarea 
+                id="message" 
+                className="form-control" 
+                cols="30" 
+                rows="10" 
+                {...register('message')}
+              ></textarea>
             </div>
             <div className="text-end">
               <button type="submit" className="btn btn-danger">送出訂單</button>
