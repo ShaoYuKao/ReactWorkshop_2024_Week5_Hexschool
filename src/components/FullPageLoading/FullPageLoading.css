@@ -8,5 +8,5 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000; /* 確保 loading 在最上層 */
+  z-index: 9999; /* 確保 loading 在最上層 */
 }

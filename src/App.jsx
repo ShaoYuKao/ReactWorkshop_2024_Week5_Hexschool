@@ -4,7 +4,7 @@ import * as bootstrap from "bootstrap";
 import './App.css';
 import FullPageLoading from './components/FullPageLoading';
 import ProductModal from './components/ProductModal';
-import AddToCartModal from './components/AddToCartModal'; // 新增這行
+import AddToCartModal from './components/AddToCartModal';
 
 const API_BASE = "https://ec-course-api.hexschool.io/v2";
 const API_PATH = "202501-react-shaoyu";
@@ -16,9 +16,12 @@ function App() {
   const [searchTerm, setSearchTerm] = useState(''); // 搜尋關鍵字
   const [loading, setLoading] = useState(false); // 加載狀態
   const searchCategoryRef = useRef(null); // 分類搜尋的參考
-  const [selectedProduct, setSelectedProduct] = useState(null); // 選中的產品
-  const [cartProduct, setCartProduct] = useState(null); // 新增這行
-  const [cartQty, setCartQty] = useState(1); // 新增這行
+  const [selectedProduct, setSelectedProduct] = useState(null); // 選擇的產品
+  const [cartProduct, setCartProduct] = useState(null); // 加到購物車的產品
+  const [cartQty, setCartQty] = useState(1);  // 加到購物車的數量
+  const [cartItems, setCartItems] = useState([]); // 購物車項目
+  const [cartTotal, setCartTotal] = useState(0); // 購物車總計
+  const [cartFinalTotal, setCartFinalTotal] = useState(0); // 購物車折扣後總計
 
   useEffect(() => {
     setLoading(true); // 開始加載
@@ -33,6 +36,7 @@ function App() {
       })
       .finally(() => {
         setLoading(false); // 結束加載
+        fetchCart(); // 更新購物車資訊
       });
   }, [page, searchTerm]);
 
@@ -65,7 +69,7 @@ function App() {
     setLoading(true); // 開始加載
     axios.get(`${API_BASE}/api/${API_PATH}/product/${productId}`)
       .then(response => {
-        setSelectedProduct(response.data.product);
+        setSelectedProduct(response.data.product);  // 設定選擇的產品
         const productModal = new bootstrap.Modal(document.getElementById('productModal'), {
           backdrop: 'static'
         });
@@ -89,7 +93,7 @@ function App() {
     setLoading(true); // 開始加載
     axios.get(`${API_BASE}/api/${API_PATH}/product/${productId}`)
       .then(response => {
-        setCartProduct(response.data.product);
+        setCartProduct(response.data.product);  // 設定加到購物車的產品
         setCartQty(1); // 重置數量為1
         const addToCartModal = new bootstrap.Modal(document.getElementById('addToCartModal'), {
           backdrop: 'static'
@@ -99,6 +103,27 @@ function App() {
       .catch(error => {
         console.error('Error fetching product details:', error);
         alert('取得產品細節失敗!!');
+      })
+      .finally(() => {
+        setLoading(false); // 結束加載
+      });
+  };
+
+  /**
+   * 取得購物車列表的函式。
+   * @returns {void}
+   */
+  const fetchCart = () => {
+    setLoading(true); // 開始加載
+    axios.get(`${API_BASE}/api/${API_PATH}/cart`)
+      .then(response => {
+        setCartItems(response.data.data.carts);
+        setCartTotal(response.data.data.total);
+        setCartFinalTotal(response.data.data.final_total);
+      })
+      .catch(error => {
+        console.error('Error fetching cart:', error);
+        alert('取得購物車資料失敗!!');
       })
       .finally(() => {
         setLoading(false); // 結束加載
@@ -121,6 +146,7 @@ function App() {
         alert('已加入購物車');
         const addToCartModal = bootstrap.Modal.getInstance(document.getElementById('addToCartModal'));
         addToCartModal.hide();
+        fetchCart(); // 更新購物車資訊
       })
       .catch(error => {
         console.error('Error adding to cart:', error);
@@ -231,23 +257,32 @@ function App() {
           <table className="table align-middle">
             <thead>
               <tr>
-                <th></th>
+                <th style={{ width: '150px' }}></th>
                 <th>品名</th>
                 <th style={{ width: '150px' }}>數量/單位</th>
                 <th>單價</th>
               </tr>
             </thead>
             <tbody>
-              {/* Cart rows here */}
+              {cartItems.map(item => (
+                <tr key={item.id}>
+                  <td>
+                    <img src={item.product.imageUrl} alt={item.product.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </td>
+                  <td>{item.product.title}</td>
+                  <td>{item.qty} / {item.product.unit}</td>
+                  <td>{item.product.price}</td>
+                </tr>
+              ))}
             </tbody>
             <tfoot>
               <tr>
                 <td colSpan="3" className="text-end">總計</td>
-                <td className="text-end"></td>
+                <td className="text-end">{cartTotal}</td>
               </tr>
               <tr>
                 <td colSpan="3" className="text-end text-success">折扣價</td>
-                <td className="text-end text-success"></td>
+                <td className="text-end text-success">{cartFinalTotal}</td>
               </tr>
             </tfoot>
           </table>
