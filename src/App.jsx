@@ -5,6 +5,7 @@ import './App.css';
 import FullPageLoading from './components/FullPageLoading';
 import ProductModal from './components/ProductModal';
 import AddToCartModal from './components/AddToCartModal';
+import Pagination from './components/Pagination';
 
 const API_BASE = "https://ec-course-api.hexschool.io/v2";
 const API_PATH = "202501-react-shaoyu";
@@ -160,6 +161,14 @@ function App() {
       });
   };
 
+  /**
+   * 編輯購物車項目
+   * 
+   * @param {Object} cartItem - 購物車項目
+   * @param {string} cartItem.id - 購物車項目的ID
+   * @param {Object} cartItem.product - 購物車項目的產品
+   * @param {number} cartItem.qty - 購物車項目的數量
+   */
   const handleEditCart = (cartItem) => {
     setEditCartId(cartItem.id); // 設定編輯的購物車ID
     setCartProduct(cartItem.product);  // 設定加到購物車的產品
@@ -171,6 +180,16 @@ function App() {
     addToCartModal.show();
   };
 
+  /**
+   * 確認編輯購物車的處理函數。
+   * 
+   * 此函數會發送一個 PUT 請求到 API 以更新購物車中的商品數量。
+   * 在請求發送前會設置加載狀態，請求成功後會顯示成功訊息並隱藏模態框，
+   * 並重新獲取購物車資訊。若請求失敗，會顯示錯誤訊息。
+   * 
+   * @function handleConfirmEditCart
+   * @returns {void}
+   */
   const handleConfirmEditCart = () => {
     setLoading(true); // 開始加載
     axios.put(`${API_BASE}/api/${API_PATH}/cart/${editCartId}`, {
@@ -265,29 +284,14 @@ function App() {
           {/* Pagination */}
           {
             totalPages > 1 && (
-              <div className="d-flex justify-content-end">
-                <nav aria-label="Page navigation example">
-                  <ul className="pagination">
-                    <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
-                      <button className="page-link" onClick={() => handlePageChange(page - 1)} aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                      </button>
-                    </li>
-                    {[...Array(totalPages)].map((_, index) => (
-                      <li key={index} className={`page-item ${page === index + 1 ? 'active' : ''}`}>
-                        <button className="page-link" onClick={() => handlePageChange(index + 1)}>{index + 1}</button>
-                      </li>
-                    ))}
-                    <li className={`page-item ${page === totalPages ? 'disabled' : ''}`}>
-                      <button className="page-link" onClick={() => handlePageChange(page + 1)} aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                      </button>
-                    </li>
-                  </ul>
-                </nav>
-              </div>
+              <Pagination 
+                totalPages={totalPages} 
+                currentPage={page} 
+                onPageChange={handlePageChange} 
+              />
             )
           }
+          
           {/* Pagination */}
           <div className="text-end">
             <button className="btn btn-outline-danger" type="button">清空購物車</button>
