@@ -6,7 +6,8 @@ import FullPageLoading from './components/FullPageLoading';
 import ProductModal from './components/ProductModal';
 import AddToCartModal from './components/AddToCartModal';
 import Pagination from './components/Pagination';
-import RemoveCartItemModal from './components/RemoveCartItemModal'; // 新增引入
+import RemoveCartItemModal from './components/RemoveCartItemModal';
+import ClearCartModal from './components/ClearCartModal';
 
 const API_BASE = "https://ec-course-api.hexschool.io/v2";
 const API_PATH = "202501-react-shaoyu";
@@ -26,7 +27,7 @@ function App() {
   const [cartFinalTotal, setCartFinalTotal] = useState(0); // 購物車折扣後總計
   const [mode, setMode] = useState('add'); // 模式
   const [editCartId, setEditCartId] = useState(null); // 編輯的購物車ID
-  const [removeCartItem, setRemoveCartItem] = useState(null); // 新增狀態
+  const [removeCartItem, setRemoveCartItem] = useState(null); // 要刪除的購物車項目
 
   useEffect(() => {
     setLoading(true); // 開始加載
@@ -249,6 +250,31 @@ function App() {
       });
   };
 
+  const handleClearCart = () => {
+    const clearCartModal = new bootstrap.Modal(document.getElementById('clearCartModal'), {
+      backdrop: 'static'
+    });
+    clearCartModal.show();
+  };
+
+  const handleConfirmClearCart = () => {
+    setLoading(true); // 開始加載
+    axios.delete(`${API_BASE}/api/${API_PATH}/carts`)
+      .then(response => {
+        alert('已清空購物車');
+        const clearCartModal = bootstrap.Modal.getInstance(document.getElementById('clearCartModal'));
+        clearCartModal.hide();
+        fetchCart(); // 更新購物車資訊
+      })
+      .catch(error => {
+        console.error('Error clearing cart:', error);
+        alert('清空購物車失敗!!');
+      })
+      .finally(() => {
+        setLoading(false); // 結束加載
+      });
+  };
+
   return (
     <div id="app">
       {loading && <FullPageLoading />}
@@ -272,6 +298,7 @@ function App() {
             onConfirm={handleConfirmRemoveCartItem} 
           />
           {/* 刪除購物車項目Modal */}
+          <ClearCartModal onConfirm={handleConfirmClearCart} />
           <div className="row g-3 align-items-center">
             <div className="col-auto">
               <label htmlFor="searchCategory">分類：</label>
@@ -335,7 +362,7 @@ function App() {
           }
           {/* Pagination */}
           <div className="text-end">
-            <button id="btnClearCart" className="btn btn-outline-danger" type="button">清空購物車</button>
+            <button id="btnClearCart" className="btn btn-outline-danger" type="button" onClick={handleClearCart}>清空購物車</button>
           </div>
           <table className="table align-middle">
             <thead>
