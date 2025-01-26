@@ -431,123 +431,134 @@ function App() {
             )
           }
           {/* Pagination */}
-          <div className="text-end">
-            <button 
-              type="button" 
-              id="btnClearCart" 
-              className="btn btn-outline-danger" 
-              onClick={handleClearCart}
-            >清空購物車</button>
-          </div>
-          <table className="table align-middle">
-            <thead>
-              <tr>
-                <th style={{ width: '150px' }}></th>
-                <th>品名</th>
-                <th style={{ width: '150px' }}>數量/單位</th>
-                <th>單價</th>
-                <th style={{ width: '150px' }}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {cartItems.map(item => (
-                <tr key={item.id}>
-                  <td>
-                    <img src={item.product.imageUrl} alt={item.product.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  </td>
-                  <td>{item.product.title}</td>
-                  <td>{item.qty} / {item.product.unit}</td>
-                  <td>{item.product.price}</td>
-                  <td>
-                    <button type="button" id={'btnEditCartItem' + item.id} className="btn btn-outline-secondary" onClick={() => handleEditCart(item)}>調整</button>
-                    <button type="button" id={'btnRemoveCartItem' + item.id} className="btn btn-outline-danger" onClick={() => handleRemoveCartItem(item)}>移除</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colSpan="3" className="text-end">總計</td>
-                <td className="text-end">{cartTotal}</td>
-                <td></td>
-              </tr>
-              <tr>
-                <td colSpan="3" className="text-end text-success">折扣價</td>
-                <td className="text-end text-success">{cartFinalTotal}</td>
-                <td></td>
-              </tr>
-            </tfoot>
-          </table>
+          {
+            cartItems.length > 0 && (
+              <>
+                <div className="text-end">
+                  <button 
+                    type="button" 
+                    id="btnClearCart" 
+                    className="btn btn-outline-danger" 
+                    onClick={handleClearCart}
+                  >清空購物車</button>
+                </div>
+                <table className="table align-middle">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '150px' }}></th>
+                      <th>品名</th>
+                      <th style={{ width: '150px' }}>數量/單位</th>
+                      <th>單價</th>
+                      <th style={{ width: '150px' }}></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cartItems.map(item => (
+                      <tr key={item.id}>
+                        <td>
+                          <img src={item.product.imageUrl} alt={item.product.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </td>
+                        <td>{item.product.title}</td>
+                        <td>{item.qty} / {item.product.unit}</td>
+                        <td>{item.product.price}</td>
+                        <td>
+                          <button type="button" id={'btnEditCartItem' + item.id} className="btn btn-outline-secondary" onClick={() => handleEditCart(item)}>調整</button>
+                          <button type="button" id={'btnRemoveCartItem' + item.id} className="btn btn-outline-danger" onClick={() => handleRemoveCartItem(item)}>移除</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colSpan="3" className="text-end">總計</td>
+                      <td className="text-end">{cartTotal}</td>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td colSpan="3" className="text-end text-success">折扣價</td>
+                      <td className="text-end text-success">{cartFinalTotal}</td>
+                      <td></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </>
+            )
+          }
         </div>
-        <div className="my-5 row justify-content-center">
-          <form className="col-md-6" onSubmit={handleSubmit(onSubmit, onError)}>
-            <div className="mb-3">
-              <label htmlFor="email" className="form-label">Email</label>
-              <input 
-                id="email" 
-                name="email" 
-                type="email" 
-                className="form-control" 
-                placeholder="請輸入 Email" 
-                {...register('email', { required: 'Email 是必填欄位', pattern: { value: /^\S+@\S+$/i, message: 'Email 格式不正確' } })}
-              />
-              {errors.email && <span className="text-danger">{errors.email.message}</span>}
-            </div>
+        {
+          cartItems.length > 0 && (
+            <div className="my-5 row justify-content-center">
+              <form className="col-md-6" onSubmit={handleSubmit(onSubmit, onError)}>
+                <div className="mb-3">
+                  <label htmlFor="email" className="form-label">Email</label>
+                  <input 
+                    id="email" 
+                    name="email" 
+                    type="email" 
+                    className="form-control" 
+                    placeholder="請輸入 Email" 
+                    {...register('email', { required: 'Email 是必填欄位', pattern: { value: /^\S+@\S+$/i, message: 'Email 格式不正確' } })}
+                  />
+                  {errors.email && <span className="text-danger">{errors.email.message}</span>}
+                </div>
 
-            <div className="mb-3">
-              <label htmlFor="name" className="form-label">收件人姓名</label>
-              <input 
-                id="name" 
-                name="name" 
-                type="text" 
-                className="form-control" 
-                placeholder="請輸入姓名" 
-                {...register('name', { required: '姓名是必填欄位' })}
-              />
-              {errors.name && <span className="text-danger">{errors.name.message}</span>}
-            </div>
+                <div className="mb-3">
+                  <label htmlFor="name" className="form-label">收件人姓名</label>
+                  <input 
+                    id="name" 
+                    name="name" 
+                    type="text" 
+                    className="form-control" 
+                    placeholder="請輸入姓名" 
+                    {...register('name', { required: '姓名是必填欄位' })}
+                  />
+                  {errors.name && <span className="text-danger">{errors.name.message}</span>}
+                </div>
 
-            <div className="mb-3">
-              <label htmlFor="tel" className="form-label">收件人電話</label>
-              <input 
-                id="tel" 
-                name="tel" 
-                type="tel" 
-                className="form-control" 
-                placeholder="請輸入電話" 
-                {...register('tel', { required: '電話是必填欄位', minLength: { value: 8, message: '電話號碼需超過 8 碼' } })}
-              />
-              {errors.tel && <span className="text-danger">{errors.tel.message}</span>}
-            </div>
+                <div className="mb-3">
+                  <label htmlFor="tel" className="form-label">收件人電話</label>
+                  <input 
+                    id="tel" 
+                    name="tel" 
+                    type="tel" 
+                    className="form-control" 
+                    placeholder="請輸入電話" 
+                    {...register('tel', { required: '電話是必填欄位', minLength: { value: 8, message: '電話號碼需超過 8 碼' } })}
+                  />
+                  {errors.tel && <span className="text-danger">{errors.tel.message}</span>}
+                </div>
 
-            <div className="mb-3">
-              <label htmlFor="address" className="form-label">收件人地址</label>
-              <input 
-                id="address" 
-                name="address" 
-                type="text" 
-                className="form-control" 
-                placeholder="請輸入地址" 
-                {...register('address', { required: '地址是必填欄位' })}
-              />
-              {errors.address && <span className="text-danger">{errors.address.message}</span>}
-            </div>
+                <div className="mb-3">
+                  <label htmlFor="address" className="form-label">收件人地址</label>
+                  <input 
+                    id="address" 
+                    name="address" 
+                    type="text" 
+                    className="form-control" 
+                    placeholder="請輸入地址" 
+                    {...register('address', { required: '地址是必填欄位' })}
+                  />
+                  {errors.address && <span className="text-danger">{errors.address.message}</span>}
+                </div>
 
-            <div className="mb-3">
-              <label htmlFor="message" className="form-label">留言</label>
-              <textarea 
-                id="message" 
-                className="form-control" 
-                cols="30" 
-                rows="10" 
-                {...register('message')}
-              ></textarea>
+                <div className="mb-3">
+                  <label htmlFor="message" className="form-label">留言</label>
+                  <textarea 
+                    id="message" 
+                    className="form-control" 
+                    cols="30" 
+                    rows="10" 
+                    {...register('message')}
+                  ></textarea>
+                </div>
+                <div className="text-end">
+                  <button type="submit" className="btn btn-danger">送出訂單</button>
+                </div>
+              </form>
             </div>
-            <div className="text-end">
-              <button type="submit" className="btn btn-danger">送出訂單</button>
-            </div>
-          </form>
-        </div>
+          )
+        }
+        
       </div>
     </div>
   );
