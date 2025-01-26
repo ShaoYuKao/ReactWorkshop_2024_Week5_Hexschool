@@ -30,7 +30,7 @@ function App() {
   const [editCartId, setEditCartId] = useState(null); // 編輯的購物車ID
   const [removeCartItem, setRemoveCartItem] = useState(null); // 要刪除的購物車項目
 
-  const { register, handleSubmit, formState: { errors } } = useForm();  // 表單處理
+  const { register, handleSubmit, formState: { errors }, reset } = useForm();  // 表單處理
 
   /**
    * 提交訂單資料的處理函式
@@ -59,6 +59,7 @@ function App() {
     })
     .then(response => {
       alert('訂單已送出');
+      reset(); // 清空表單欄位
       fetchCart(); // 更新購物車資訊
     })
     .catch(error => {
