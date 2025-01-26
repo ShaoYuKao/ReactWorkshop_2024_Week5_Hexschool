@@ -32,16 +32,50 @@ function App() {
 
   const { register, handleSubmit, formState: { errors } } = useForm();  // 表單處理
 
+  /**
+   * 提交訂單資料的處理函式
+   * 
+   * @param {Object} data - 包含使用者訂單資料的物件
+   * @param {string} data.name - 使用者名稱
+   * @param {string} data.email - 使用者電子郵件
+   * @param {string} data.tel - 使用者電話號碼
+   */
   const onSubmit = (data) => {
-    alert('訂單已送出');
+    if (cartItems.length <= 0) {
+      alert('購物車內無資料!!');
+      return;
+    }
+    setLoading(true); // 開始加載
+    axios.post(`${API_BASE}/api/${API_PATH}/order`, {
+      data: {
+        user: {
+          name: data.name,
+          email: data.email,
+          tel: data.tel,
+          address: data.address
+        },
+        message: data.message
+      }
+    })
+    .then(response => {
+      alert('訂單已送出');
+      fetchCart(); // 更新購物車資訊
+    })
+    .catch(error => {
+      console.error('Error submitting order:', error);
+      alert('送出訂單失敗!!');
+    })
+    .finally(() => {
+      setLoading(false); // 結束加載
+    });
   };
 
   /**
-   * 當表單驗證錯誤時觸發的回調函數。
+   * 當表單驗證錯誤時觸發的回調函數
    * 
-   * @param {Object} errors - 包含所有錯誤訊息的物件。
-   * @param {Object} errors.key - 錯誤訊息的鍵值對。
-   * @param {string} errors.key.message - 錯誤訊息的內容。
+   * @param {Object} errors - 包含所有錯誤訊息的物件
+   * @param {Object} errors.key - 錯誤訊息的鍵值對
+   * @param {string} errors.key.message - 錯誤訊息的內容
    */
   const onError = (errors) => {
     Object.keys(errors).forEach(key => {
@@ -67,8 +101,8 @@ function App() {
   }, [page, searchTerm]);
 
   /**
-   * 處理頁面變更的函式。
-   * @param {number} newPage - 新的頁面號碼。
+   * 處理頁面變更的函式
+   * @param {number} newPage - 新的頁面號碼
    * @returns {void} 
    */
   const handlePageChange = (newPage) => {
@@ -78,8 +112,8 @@ function App() {
   };
 
   /**
-   * 處理搜尋操作的函式。
-   * 當呼叫此函式時，會將頁面重置為第一頁，並設定搜尋關鍵字。
+   * 處理搜尋操作的函式
+   * 當呼叫此函式時，會將頁面重置為第一頁，並設定搜尋關鍵字
    */
   const handleSearch = () => {
     setPage(1); // 重置頁面為第一頁
@@ -87,8 +121,8 @@ function App() {
   };
 
   /**
-   * 處理查看更多的函式。
-   * @param {string} productId - 產品ID。
+   * 單一產品細節 API 呼叫
+   * @param {string} productId - 產品ID
    * @returns {void}
    */
   const handleViewMore = (productId) => {
@@ -111,8 +145,8 @@ function App() {
   };
 
   /**
-   * 處理加到購物車的函式。
-   * @param {string} productId - 產品ID。
+   * 處理加到購物車 Modal 的函式
+   * @param {string} productId - 產品ID
    * @returns {void}
    */
   const handleAddToCart = (productId) => {
@@ -137,7 +171,7 @@ function App() {
   };
 
   /**
-   * 取得購物車列表的函式。
+   * 取得購物車列表 API 呼叫
    * @returns {void}
    */
   const fetchCart = () => {
@@ -158,7 +192,7 @@ function App() {
   };
 
   /**
-   * 處理加入購物車的 API 呼叫。
+   * 處理加入購物車的 API 呼叫
    * @returns {void}
    */
   const handleConfirmAddToCart = () => {
@@ -185,7 +219,7 @@ function App() {
   };
 
   /**
-   * 編輯購物車項目
+   * 編輯購物車項目 Modal
    * 
    * @param {Object} cartItem - 購物車項目
    * @param {string} cartItem.id - 購物車項目的ID
@@ -204,11 +238,12 @@ function App() {
   };
 
   /**
-   * 確認編輯購物車的處理函數。
+   * 調整購物車產品數量 API 呼叫
+   * 確認編輯購物車的處理函數
    * 
-   * 此函數會發送一個 PUT 請求到 API 以更新購物車中的商品數量。
+   * 此函數會發送一個 PUT 請求到 API 以更新購物車中的商品數量
    * 在請求發送前會設置加載狀態，請求成功後會顯示成功訊息並隱藏模態框，
-   * 並重新獲取購物車資訊。若請求失敗，會顯示錯誤訊息。
+   * 並重新獲取購物車資訊。若請求失敗，會顯示錯誤訊息
    * 
    * @function handleConfirmEditCart
    * @returns {void}
@@ -237,7 +272,7 @@ function App() {
   };
 
   /**
-   * 處理刪除購物車項目的函式。
+   * 處理刪除購物車項目的函式 Modal
    * @param {Object} cartItem - 購物車項目
    */
   const handleRemoveCartItem = (cartItem) => {
@@ -249,7 +284,8 @@ function App() {
   };
 
   /**
-   * 確認刪除購物車項目的處理函數。
+   * 單一刪除購物車項目 API 呼叫
+   * 確認刪除購物車項目的處理函數
    * @returns {void}
    */
   const handleConfirmRemoveCartItem = () => {
@@ -271,7 +307,7 @@ function App() {
   };
 
   /**
-   * 顯示清空購物車的模態視窗。
+   * 顯示清空購物車的 Modal 視窗
    * 使用 Bootstrap 的 Modal 元件，並將 backdrop 設定為 'static'，
    * 以防止使用者點擊背景關閉模態視窗。
    */
@@ -283,11 +319,12 @@ function App() {
   };
 
   /**
-   * 清空購物車的處理函式。
-   * 當用戶確認清空購物車時，會發送請求至伺服器以刪除購物車中的所有項目。
-   * 在請求過程中會顯示加載狀態，並在請求完成後更新購物車資訊。
-   * 如果請求成功，會顯示成功訊息並關閉清空購物車的模態框。
-   * 如果請求失敗，會顯示錯誤訊息。
+   * 刪除購物車項目全部 API 呼叫
+   * 清空購物車的處理函式
+   * 當用戶確認清空購物車時，會發送請求至伺服器以刪除購物車中的所有項目
+   * 在請求過程中會顯示加載狀態，並在請求完成後更新購物車資訊
+   * 如果請求成功，會顯示成功訊息並關閉清空購物車的模態框
+   * 如果請求失敗，會顯示錯誤訊息
    */
   const handleConfirmClearCart = () => {
     setLoading(true); // 開始加載
@@ -394,7 +431,12 @@ function App() {
           }
           {/* Pagination */}
           <div className="text-end">
-            <button id="btnClearCart" className="btn btn-outline-danger" type="button" onClick={handleClearCart}>清空購物車</button>
+            <button 
+              type="button" 
+              id="btnClearCart" 
+              className="btn btn-outline-danger" 
+              onClick={handleClearCart}
+            >清空購物車</button>
           </div>
           <table className="table align-middle">
             <thead>
