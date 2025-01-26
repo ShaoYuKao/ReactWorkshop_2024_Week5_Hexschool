@@ -3,7 +3,8 @@ import axios from 'axios';
 import * as bootstrap from "bootstrap";
 import './App.css';
 import FullPageLoading from './components/FullPageLoading';
-import ProductModal from './components/ProductModal'; // 新增這行
+import ProductModal from './components/ProductModal';
+import AddToCartModal from './components/AddToCartModal'; // 新增這行
 
 const API_BASE = "https://ec-course-api.hexschool.io/v2";
 const API_PATH = "202501-react-shaoyu";
@@ -16,6 +17,8 @@ function App() {
   const [loading, setLoading] = useState(false); // 加載狀態
   const searchCategoryRef = useRef(null); // 分類搜尋的參考
   const [selectedProduct, setSelectedProduct] = useState(null); // 選中的產品
+  const [cartProduct, setCartProduct] = useState(null); // 新增這行
+  const [cartQty, setCartQty] = useState(1); // 新增這行
 
   useEffect(() => {
     setLoading(true); // 開始加載
@@ -63,12 +66,65 @@ function App() {
     axios.get(`${API_BASE}/api/${API_PATH}/product/${productId}`)
       .then(response => {
         setSelectedProduct(response.data.product);
-        const productModal = new bootstrap.Modal(document.getElementById('productModal'));
+        const productModal = new bootstrap.Modal(document.getElementById('productModal'), {
+          backdrop: 'static'
+        });
         productModal.show();
       })
       .catch(error => {
         console.error('Error fetching product details:', error);
         alert('取得產品細節失敗!!');
+      })
+      .finally(() => {
+        setLoading(false); // 結束加載
+      });
+  };
+
+  /**
+   * 處理加到購物車的函式。
+   * @param {string} productId - 產品ID。
+   * @returns {void}
+   */
+  const handleAddToCart = (productId) => {
+    setLoading(true); // 開始加載
+    axios.get(`${API_BASE}/api/${API_PATH}/product/${productId}`)
+      .then(response => {
+        setCartProduct(response.data.product);
+        setCartQty(1); // 重置數量為1
+        const addToCartModal = new bootstrap.Modal(document.getElementById('addToCartModal'), {
+          backdrop: 'static'
+        });
+        addToCartModal.show();
+      })
+      .catch(error => {
+        console.error('Error fetching product details:', error);
+        alert('取得產品細節失敗!!');
+      })
+      .finally(() => {
+        setLoading(false); // 結束加載
+      });
+  };
+
+  /**
+   * 處理加入購物車的 API 呼叫。
+   * @returns {void}
+   */
+  const handleConfirmAddToCart = () => {
+    setLoading(true); // 開始加載
+    axios.post(`${API_BASE}/api/${API_PATH}/cart`, {
+      data: {
+        product_id: cartProduct.id,
+        qty: cartQty
+      }
+    })
+      .then(response => {
+        alert('已加入購物車');
+        const addToCartModal = bootstrap.Modal.getInstance(document.getElementById('addToCartModal'));
+        addToCartModal.hide();
+      })
+      .catch(error => {
+        console.error('Error adding to cart:', error);
+        alert('加入購物車失敗!!');
       })
       .finally(() => {
         setLoading(false); // 結束加載
@@ -83,6 +139,14 @@ function App() {
           {/* 產品Modal */}
           <ProductModal selectedProduct={selectedProduct} />
           {/* 產品Modal */}
+          {/* 加到購物車Modal */}
+          <AddToCartModal 
+            product={cartProduct} 
+            qty={cartQty} 
+            setQty={setCartQty} 
+            onConfirm={handleConfirmAddToCart} 
+          />
+          {/* 加到購物車Modal */}
           <div className="row g-3 align-items-center">
             <div className="col-auto">
               <label htmlFor="searchCategory">分類：</label>
@@ -124,7 +188,7 @@ function App() {
                         <i className="fas fa-spinner fa-pulse"></i>
                         查看更多
                       </button>
-                      <button type="button" className="btn btn-outline-danger">
+                      <button type="button" className="btn btn-outline-danger" onClick={() => handleAddToCart(product.id)}>
                         <i className="fas fa-spinner fa-pulse"></i>
                         加到購物車
                       </button>
