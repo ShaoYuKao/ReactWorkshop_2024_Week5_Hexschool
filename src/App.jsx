@@ -22,6 +22,8 @@ function App() {
   const [cartItems, setCartItems] = useState([]); // 購物車項目
   const [cartTotal, setCartTotal] = useState(0); // 購物車總計
   const [cartFinalTotal, setCartFinalTotal] = useState(0); // 購物車折扣後總計
+  const [mode, setMode] = useState('add'); // 模式
+  const [editCartId, setEditCartId] = useState(null); // 編輯的購物車ID
 
   useEffect(() => {
     setLoading(true); // 開始加載
@@ -95,6 +97,7 @@ function App() {
       .then(response => {
         setCartProduct(response.data.product);  // 設定加到購物車的產品
         setCartQty(1); // 重置數量為1
+        setMode('add'); // 設定模式為新增
         const addToCartModal = new bootstrap.Modal(document.getElementById('addToCartModal'), {
           backdrop: 'static'
         });
@@ -157,6 +160,40 @@ function App() {
       });
   };
 
+  const handleEditCart = (cartItem) => {
+    setEditCartId(cartItem.id); // 設定編輯的購物車ID
+    setCartProduct(cartItem.product);  // 設定加到購物車的產品
+    setCartQty(cartItem.qty); // 設定數量
+    setMode('edit'); // 設定模式為編輯
+    const addToCartModal = new bootstrap.Modal(document.getElementById('addToCartModal'), {
+      backdrop: 'static'
+    });
+    addToCartModal.show();
+  };
+
+  const handleConfirmEditCart = () => {
+    setLoading(true); // 開始加載
+    axios.put(`${API_BASE}/api/${API_PATH}/cart/${editCartId}`, {
+      data: {
+        product_id: cartProduct.id,
+        qty: cartQty
+      }
+    })
+      .then(response => {
+        alert('已更新購物車');
+        const addToCartModal = bootstrap.Modal.getInstance(document.getElementById('addToCartModal'));
+        addToCartModal.hide();
+        fetchCart(); // 更新購物車資訊
+      })
+      .catch(error => {
+        console.error('Error updating cart:', error);
+        alert('更新購物車失敗!!');
+      })
+      .finally(() => {
+        setLoading(false); // 結束加載
+      });
+  };
+
   return (
     <div id="app">
       {loading && <FullPageLoading />}
@@ -170,7 +207,8 @@ function App() {
             product={cartProduct} 
             qty={cartQty} 
             setQty={setCartQty} 
-            onConfirm={handleConfirmAddToCart} 
+            onConfirm={mode === 'edit' ? handleConfirmEditCart : handleConfirmAddToCart} 
+            mode={mode}
           />
           {/* 加到購物車Modal */}
           <div className="row g-3 align-items-center">
@@ -261,6 +299,7 @@ function App() {
                 <th>品名</th>
                 <th style={{ width: '150px' }}>數量/單位</th>
                 <th>單價</th>
+                <th style={{ width: '150px' }}></th>
               </tr>
             </thead>
             <tbody>
@@ -272,6 +311,10 @@ function App() {
                   <td>{item.product.title}</td>
                   <td>{item.qty} / {item.product.unit}</td>
                   <td>{item.product.price}</td>
+                  <td>
+                    <button type="button" className="btn btn-outline-secondary" onClick={() => handleEditCart(item)}>調整</button>
+                    <button type="button" className="btn btn-outline-danger">移除</button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -279,10 +322,12 @@ function App() {
               <tr>
                 <td colSpan="3" className="text-end">總計</td>
                 <td className="text-end">{cartTotal}</td>
+                <td></td>
               </tr>
               <tr>
                 <td colSpan="3" className="text-end text-success">折扣價</td>
                 <td className="text-end text-success">{cartFinalTotal}</td>
+                <td></td>
               </tr>
             </tfoot>
           </table>
