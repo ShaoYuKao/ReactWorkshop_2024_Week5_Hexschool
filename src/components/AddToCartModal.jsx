@@ -1,8 +1,4 @@
-import React from 'react';
-
 function AddToCartModal({ product, qty, setQty, onConfirm }) {
-  if (!product) return null;
-
   return (
     <div 
       id="addToCartModal" 
@@ -18,11 +14,15 @@ function AddToCartModal({ product, qty, setQty, onConfirm }) {
             <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div className="modal-body">
-            <div className="text-center">
-              <img src={product.imageUrl} alt={product.title} style={{ width: '100%', height: 'auto' }} />
-              <h5 className="mt-3">{product.title}</h5>
-              <p className="text-muted">{product.price} 元</p>
-            </div>
+            {product ? (
+              <div className="text-center">
+                <img src={product.imageUrl} alt={product.title} style={{ width: '100%', height: 'auto' }} />
+                <h5 className="mt-3">{product.title}</h5>
+                <p className="text-muted">{product.price} 元</p>
+              </div>
+            ) : (
+              <p>載入中...</p>
+            )}
             <div className="mb-3">
               <label htmlFor="cartQty" className="form-label">數量</label>
               <input 
@@ -32,12 +32,13 @@ function AddToCartModal({ product, qty, setQty, onConfirm }) {
                 value={qty} 
                 onChange={(e) => setQty(Math.max(1, parseInt(e.target.value)))} 
                 min="1" 
+                disabled={!product}
               />
             </div>
           </div>
           <div className="modal-footer">
             <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-            <button type="button" className="btn btn-primary" onClick={onConfirm}>確定</button>
+            <button type="button" className="btn btn-primary" onClick={onConfirm} disabled={!product}>確定</button>
           </div>
         </div>
       </div>
