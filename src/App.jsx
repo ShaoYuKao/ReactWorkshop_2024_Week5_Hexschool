@@ -6,6 +6,7 @@ import FullPageLoading from './components/FullPageLoading';
 import ProductModal from './components/ProductModal';
 import AddToCartModal from './components/AddToCartModal';
 import Pagination from './components/Pagination';
+import RemoveCartItemModal from './components/RemoveCartItemModal'; // 新增引入
 
 const API_BASE = "https://ec-course-api.hexschool.io/v2";
 const API_PATH = "202501-react-shaoyu";
@@ -25,6 +26,7 @@ function App() {
   const [cartFinalTotal, setCartFinalTotal] = useState(0); // 購物車折扣後總計
   const [mode, setMode] = useState('add'); // 模式
   const [editCartId, setEditCartId] = useState(null); // 編輯的購物車ID
+  const [removeCartItem, setRemoveCartItem] = useState(null); // 新增狀態
 
   useEffect(() => {
     setLoading(true); // 開始加載
@@ -213,6 +215,40 @@ function App() {
       });
   };
 
+  /**
+   * 處理刪除購物車項目的函式。
+   * @param {Object} cartItem - 購物車項目
+   */
+  const handleRemoveCartItem = (cartItem) => {
+    setRemoveCartItem(cartItem); // 設定要刪除的購物車項目
+    const removeCartItemModal = new bootstrap.Modal(document.getElementById('removeCartItemModal'), {
+      backdrop: 'static'
+    });
+    removeCartItemModal.show();
+  };
+
+  /**
+   * 確認刪除購物車項目的處理函數。
+   * @returns {void}
+   */
+  const handleConfirmRemoveCartItem = () => {
+    setLoading(true); // 開始加載
+    axios.delete(`${API_BASE}/api/${API_PATH}/cart/${removeCartItem.id}`)
+      .then(response => {
+        alert('已刪除購物車項目');
+        const removeCartItemModal = bootstrap.Modal.getInstance(document.getElementById('removeCartItemModal'));
+        removeCartItemModal.hide();
+        fetchCart(); // 更新購物車資訊
+      })
+      .catch(error => {
+        console.error('Error removing cart item:', error);
+        alert('刪除購物車項目失敗!!');
+      })
+      .finally(() => {
+        setLoading(false); // 結束加載
+      });
+  };
+
   return (
     <div id="app">
       {loading && <FullPageLoading />}
@@ -230,6 +266,12 @@ function App() {
             mode={mode}
           />
           {/* 加到購物車Modal */}
+          {/* 刪除購物車項目Modal */}
+          <RemoveCartItemModal 
+            cartItem={removeCartItem} 
+            onConfirm={handleConfirmRemoveCartItem} 
+          />
+          {/* 刪除購物車項目Modal */}
           <div className="row g-3 align-items-center">
             <div className="col-auto">
               <label htmlFor="searchCategory">分類：</label>
@@ -291,10 +333,9 @@ function App() {
               />
             )
           }
-          
           {/* Pagination */}
           <div className="text-end">
-            <button className="btn btn-outline-danger" type="button">清空購物車</button>
+            <button id="btnClearCart" className="btn btn-outline-danger" type="button">清空購物車</button>
           </div>
           <table className="table align-middle">
             <thead>
@@ -316,8 +357,8 @@ function App() {
                   <td>{item.qty} / {item.product.unit}</td>
                   <td>{item.product.price}</td>
                   <td>
-                    <button type="button" className="btn btn-outline-secondary" onClick={() => handleEditCart(item)}>調整</button>
-                    <button type="button" className="btn btn-outline-danger">移除</button>
+                    <button type="button" id={'btnEditCartItem' + item.id} className="btn btn-outline-secondary" onClick={() => handleEditCart(item)}>調整</button>
+                    <button type="button" id={'btnRemoveCartItem' + item.id} className="btn btn-outline-danger" onClick={() => handleRemoveCartItem(item)}>移除</button>
                   </td>
                 </tr>
               ))}
