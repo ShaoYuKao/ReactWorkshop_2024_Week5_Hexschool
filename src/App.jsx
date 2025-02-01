@@ -29,8 +29,15 @@ function App() {
   const [mode, setMode] = useState('add'); // 模式
   const [editCartId, setEditCartId] = useState(null); // 編輯的購物車ID
   const [removeCartItem, setRemoveCartItem] = useState(null); // 要刪除的購物車項目
+  const addToCartModalRef = useRef(null);
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm();  // 表單處理
+
+  useEffect(() => {
+    addToCartModalRef.current = new bootstrap.Modal(document.getElementById('addToCartModal'), {
+      backdrop: 'static'
+    });
+  }, []);
 
   /**
    * 提交訂單資料的處理函式
@@ -157,10 +164,7 @@ function App() {
         setCartProduct(response.data.product);  // 設定加到購物車的產品
         setCartQty(1); // 重置數量為1
         setMode('add'); // 設定模式為新增
-        const addToCartModal = new bootstrap.Modal(document.getElementById('addToCartModal'), {
-          backdrop: 'static'
-        });
-        addToCartModal.show();
+        addToCartModalRef.current.show();
       })
       .catch(error => {
         console.error('Error fetching product details:', error);
@@ -206,8 +210,7 @@ function App() {
     })
       .then(response => {
         alert('已加入購物車');
-        const addToCartModal = bootstrap.Modal.getInstance(document.getElementById('addToCartModal'));
-        addToCartModal.hide();
+        addToCartModalRef.current.hide();
         fetchCart(); // 更新購物車資訊
       })
       .catch(error => {
@@ -232,10 +235,7 @@ function App() {
     setCartProduct(cartItem.product);  // 設定加到購物車的產品
     setCartQty(cartItem.qty); // 設定數量
     setMode('edit'); // 設定模式為編輯
-    const addToCartModal = new bootstrap.Modal(document.getElementById('addToCartModal'), {
-      backdrop: 'static'
-    });
-    addToCartModal.show();
+    addToCartModalRef.current.show();
   };
 
   /**
@@ -259,8 +259,7 @@ function App() {
     })
       .then(response => {
         alert('已更新購物車');
-        const addToCartModal = bootstrap.Modal.getInstance(document.getElementById('addToCartModal'));
-        addToCartModal.hide();
+        addToCartModalRef.current.hide();
         fetchCart(); // 更新購物車資訊
       })
       .catch(error => {
